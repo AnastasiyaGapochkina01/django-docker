@@ -1,0 +1,11 @@
+build_image:
+  image: gitlab/dind
+  services:
+    - docker:dind
+
+  tags:
+    - docker
+  script:
+    - docker build -t django .
+    - docker tag django gitlab:5000/django
+    - docker push gitlab:5000/django
