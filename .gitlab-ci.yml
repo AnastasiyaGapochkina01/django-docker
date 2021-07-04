@@ -1,11 +1,42 @@
-build_image:
-  image: gitlab/dind
-  services:
-    - docker:dind
+image: docker:19.03.12
+services:
+  - docker:19.03.12-dind
 
-  tags:
-    - docker
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+before_script:
+  - docker login registry.gitlab.com -u agapochkina -p $REGISTRY_TOKEN
+
+build:
+  stage: build
   script:
-    - docker build -t django .
-    - docker tag django gitlab:5000/django
-    - docker push gitlab:5000/django
+    - docker build -t registry.gitlab.com/agapochkina/django-docker .
+    - docker push registry.gitlab.com/agapochkina/django-docker
+  only:
+    changes:
+      - Dockerfile
+      - ./djangogirls/*
+
+pytest:
+  stage: test
+  script:
+    - docker pull registry.gitlab.com/agapochkina/django-docker
+    - docker-compose up -d
+    - docker exec -it django python -m pytest
+
+release-image:
+  stage: release
+  script:
+    - docker pull
+    - docker tag
+    - docker push
+
+deploy:
+  stage: deploy
+  script:
+    - ./deploy.sh
+
