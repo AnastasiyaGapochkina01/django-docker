@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   django:
-    image: django
+    image: registry.gitlab.com/agapochkina/django-docker
     container_name: django 
     volumes: 
       - './djangogirls:/opt/djangogirls'
