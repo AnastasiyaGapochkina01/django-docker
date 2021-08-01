@@ -1,6 +1,3 @@
-image: docker:19.03.12
-services:
-  - docker:19.03.12-dind
 
 stages:
   - build
@@ -8,35 +5,38 @@ stages:
   - release
   - deploy
 
-before_script:
-  - docker login registry.gitlab.com -u agapochkina -p $REGISTRY_TOKEN
-
 build:
+  image: gitlab/dind # тут нормально работает docker login, но не работает apk
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $HUB_USERNAME -p $HUB_TOKEN
   stage: build
   script:
-    - docker build -t registry.gitlab.com/agapochkina/django-docker .
-    - docker push registry.gitlab.com/agapochkina/django-docker
+    - docker build -t agapochkina/private_registry:django .
+    - docker push agapochkina/private_registry:django
+  tags:
+    - docker
   only:
     changes:
       - Dockerfile
       - ./djangogirls/*
 
-pytest:
-  stage: test
-  script:
-    - docker pull registry.gitlab.com/agapochkina/django-docker
-    - docker-compose up -d
-    - docker exec -it django python -m pytest
-
-release-image:
-  stage: release
-  script:
-    - docker pull
-    - docker tag
-    - docker push
-
 deploy:
+  image: docker:latest # тут нормально работает apk, но не работает docker login
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://192.168.56.105:2375 # костыль для docker login
   stage: deploy
+  before_script:
+    - apk add --no-cache openssh-client bash
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - docker login -u $HUB_USERNAME -p $HUB_TOKEN
   script:
-    - ./deploy.sh
-
+    - ssh -o StrictHostKeyChecking=no gitlab-runner@192.168.56.103 "cd /opt/deploy/django-docker && docker-compose up -d"
+  tags:
+    - docker
