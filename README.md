@@ -1,4 +1,4 @@
-блог DjangoGirls в докере с gitlab-ci (деплой на локальную виртуалку)
+блог DjangoGirls в докере с gitlab-ci (деплой на локальную виртуалку, gitlab-runner тоже свой, не shared)
 
 ### ToDo
 * прикрутить линтер на Dockerfile и на yml (docker-compose)
