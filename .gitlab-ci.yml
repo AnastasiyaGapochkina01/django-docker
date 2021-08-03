@@ -4,7 +4,7 @@ stages:
   - deploy
 
 build:
-  image: gitlab/dind
+  image: gitlab/dind # тут нормально работает docker login, но не работает apk
   services:
     - docker:dind
   before_script:
@@ -21,11 +21,11 @@ build:
       - ./djangogirls/*
 
 deploy:
-  image: docker:latest
+  image: docker:latest # тут работает apk, но надо подбивать костыль для docker login
   services:
     - docker:dind
   variables:
-    DOCKER_HOST: tcp://192.168.56.105:2375
+    DOCKER_HOST: tcp://192.168.56.105:2375 # костыль для docker login
   stage: deploy
   before_script:
     - apk add --no-cache openssh-client bash
