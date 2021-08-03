@@ -1,12 +1,10 @@
-
 stages:
   - build
   - test
-  - release
   - deploy
 
 build:
-  image: gitlab/dind # тут нормально работает docker login, но не работает apk
+  image: gitlab/dind
   services:
     - docker:dind
   before_script:
@@ -23,11 +21,11 @@ build:
       - ./djangogirls/*
 
 deploy:
-  image: docker:latest # тут нормально работает apk, но не работает docker login
+  image: docker:latest
   services:
     - docker:dind
   variables:
-    DOCKER_HOST: tcp://192.168.56.105:2375 # костыль для docker login
+    DOCKER_HOST: tcp://192.168.56.105:2375
   stage: deploy
   before_script:
     - apk add --no-cache openssh-client bash
@@ -37,6 +35,6 @@ deploy:
     - chmod 700 ~/.ssh
     - docker login -u $HUB_USERNAME -p $HUB_TOKEN
   script:
-    - ssh -o StrictHostKeyChecking=no gitlab-runner@192.168.56.103 "cd /opt/deploy/django-docker && docker-compose up -d"
+    - ssh -o StrictHostKeyChecking=no gitlab-runner@192.168.56.103 "cd /opt/deploy/django-docker && git checkout master && git pull && docker-compose up -d"
   tags:
     - docker
