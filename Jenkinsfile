@@ -24,15 +24,16 @@ pipeline {
             }
         }
         
-        stage("Run python test") {
+      stage("Run python test") {
             steps {
                 sh "cd $WORK_DIR && docker-compose up -d"
                 sh "docker exec -i django python -m pytest"
+                sh "docker ps -a -q | xargs docker stop && docker ps -a -q | xargs docker rm"
             }
         }
         stage("Run deploy") {
             steps {
-                sh "cd $WORK_DIR && docker-compose up -d"
+                sh '''ssh 192.168.56.103 "cd /opt/jenkins-deploy/django-docker && docker-compose up -d"'''
             }
         }
     }
