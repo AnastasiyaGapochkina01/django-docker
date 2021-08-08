@@ -19,7 +19,7 @@ pipeline {
     stages {
         stage("Update local repo") {
             steps {
-                sh "cd $TEST_WORK_DIR && git checkout ${branch} && git pull"
+                sh "cd $TEST_WORK_DIR && git reset --hard origin/${branch}"
             }
         }
 
