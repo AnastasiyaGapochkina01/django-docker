@@ -19,23 +19,28 @@ pipeline {
     stages {
         stage("Update local repo") {
             steps {
-                sh "cd $TEST_WORK_DIR && git reset --hard origin/${branch}"
+                sh "cd $TEST_WORK_DIR && git fetch && git reset --hard origin/${branch}"
             }
         }
 
         stage("Build docker image") {
             steps {
                 script {
-                   def changed_files = sh (script: "cd $TEST_WORK_DIR && git log -p -1 | head -n1 |cut -d ' ' -f 2 | xargs git diff-tree --no-commit-id --name-only -r", returnStdout: true ).trim()
-                   echo "Changed files is: changed_files"
+                   def short_commit = sh (script: "cd $TEST_WORK_DIR && git log -n 1 --pretty=format:'%h'", returnStdout: true ).trim()
+                   def changed_files = sh (script: "cd $TEST_WORK_DIR && git diff-tree --no-commit-id --name-only -r $short_commit", returnStdout: true ).trim()
+                   docker_tag = "agapochkina/private_registry:django-$branch-$short_commit"
+                   sh "cd $TEST_WORK_DIR && echo 'TAG=$branch-$short_commit' > env.dev"
                    if (changed_files.equals("Dockerfile") || changed_files.equals("djangogirls/*")) {
                        echo "Docker image will be rebuild..."
+                       //echo "Commit hash: $short_commit"
                        sh "docker login -u $HUB_USERNAME -p $HUB_TOKEN"
-                       sh "cd $TEST_WORK_DIR && docker build -t agapochkina/private_registry:django ."
-                       sh "docker push agapochkina/private_registry:django"
+                       sh "cd $TEST_WORK_DIR && docker build -t $docker_tag ."
+                       sh "docker push $docker_tag"
                    } else {
-                       echo "No changes! Docker image will not be rebuild. Exiting..."
-                       error("Exit from pipeline")
+                       echo "No changes in $short_commit! Docker image will not be rebuild. Exiting..."
+                       def skip_next_step = "true"
+                       return skip_next_step
+                       //error("Exit from pipeline")
                    }
                 }
             }
@@ -43,7 +48,7 @@ pipeline {
         
         stage("Run python test") {
             steps {
-                sh "cd $TEST_WORK_DIR && docker-compose up -d"
+                sh "cd $TEST_WORK_DIR && docker-compose --env-file ./env.dev up -d"
                 sh "docker exec -i django python -m pytest"
                 sh "docker ps -a -q | xargs docker stop && docker ps -a -q | xargs docker rm"
             }
