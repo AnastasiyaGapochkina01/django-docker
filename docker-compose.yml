@@ -4,8 +4,6 @@ services:
   django:
     image: agapochkina/private_registry:django
     container_name: django 
-    volumes: 
-      - './djangogirls:/opt/djangogirls'
     ports:
       - '8000:8000'
     depends_on:
