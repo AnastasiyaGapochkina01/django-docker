@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   django:
-    image: agapochkina/private_registry:django
+    image: agapochkina/private_registry:django-${TAG}
     container_name: django 
     ports:
       - '8000:8000'
