@@ -13,5 +13,3 @@ WORKDIR /opt/djangogirls
 #COPY ./djangogirls/requirements.txt .
 
 RUN pip install -r requirements.txt
-
-RUN npm install && gulp watch &
