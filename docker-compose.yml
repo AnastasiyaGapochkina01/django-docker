@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   django:
-    image: agapochkina/private_registry:django-${TAG}
+    image: ${TAG}
     container_name: django 
     ports:
       - '8000:8000'
@@ -11,6 +11,11 @@ services:
         condition: service_healthy
     links:
       - db:postgres
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://192.168.56.102:12201
+        tag: django-logs
     command: >
       sh -c "npm install && gulp watch &
              python manage.py migrate &&
@@ -20,6 +25,11 @@ services:
     image: postgres
     container_name: postgres
     restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://192.168.56.102:12201
+        tag: postgres-log
     ports:
       - '5432:5432'
     environment:
