@@ -16,4 +16,3 @@
 ### ToDo
 * прикрутить линтер на Dockerfile и на yml (docker-compose)
 * настроить мониторинг (Zabbix)
-* настроить сбор логов (Graylog)
