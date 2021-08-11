@@ -12,7 +12,8 @@ services:
     links:
       - db:postgres
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "npm install && gulp watch &
+             python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
 
   db:
