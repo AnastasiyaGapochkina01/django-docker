@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+     - /opt/deploy/jenkins-deploy/nginx.conf:/etc/nginx/conf.d
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://192.168.56.102:12201
+        tag: nginx-logs
+
   django:
     image: ${TAG}
     container_name: django 
