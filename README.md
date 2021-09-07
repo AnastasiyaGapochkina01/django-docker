@@ -15,3 +15,4 @@
 
 ### ToDo
 * прикрутить линтер на Dockerfile и на yml (docker-compose)
+* добавить возможность Rollback
