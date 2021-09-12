@@ -1,0 +1,16 @@
+[Unit]
+Description=django
+Requires=docker.service
+After=docker.service
+
+[Service]
+EnvironmentFile=/opt/container_envs/django.env
+TimeoutSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f django
+ExecStart=/bin/bash -c 'echo "Starting django container"; exec /usr/bin/docker run -t --name="django" -p 8000:8000 agapochkina/private_registry:${TAG}'
+ExecStop=-/usr/bin/docker stop --time 5 django
+ExecStop=-/usr/bin/docker rm django
+
+[Install]
+WantedBy=multi-user.target
